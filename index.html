@@ -9,53 +9,23 @@
       background: #f4f4f4;
       font-family: 'Segoe UI', sans-serif;
     }
-    header {
-      background: #222;
-      color: white;
-      padding: 1rem 0;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-    .logo {
-      max-width: 150px;
-      margin: 0 auto;
-    }
-    .product-card {
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transition: transform 0.3s;
-    }
-    .product-card:hover {
-      transform: scale(1.03);
-    }
-    .product-img {
-      height: 180px;
-      object-fit: cover;
-      border-top-left-radius: 15px;
-      border-top-right-radius: 15px;
-    }
-    .category-badge {
-      font-size: 0.8rem;
-      background-color: #007bff;
-      color: white;
-      border-radius: 5px;
-      padding: 2px 6px;
-    }
-    .floating-menu {
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
-      background: white;
-      padding: 0.5rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      z-index: 1000;
-    }
-    .search-bar {
-      max-width: 300px;
-      margin: 1rem auto;
+<!-- Phần Header -->
+<header style="background-color: #111; color: white; padding: 10px; text-align: center;">
+  <img src="logo.png" alt="Kaito Review" style="height: 40px; vertical-align: middle;" />
+  <h1 style="display: inline; margin-left: 10px;">Kaito Racing</h1>
+</header>
+
+<!-- Bộ lọc -->
+<div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; margin: 20px;">
+  <select id="filter" style="padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; margin: 5px;">
+    <option value="all">Tất cả</option>
+    <option value="ốc titan">Ốc Titan</option>
+    <option value="ốc salaya">Ốc Salaya</option>
+    <option value="phụ kiện inox">Phụ kiện Inox</option>
+  </select>
+
+  <input id="search" type="text" placeholder="Tìm kiếm sản phẩm..." style="margin-left: 10px; padding: 10px; width: 250px; border-radius: 8px; border: 1px solid #ccc;" />
+</div>
     }
   </style>
 </head>
