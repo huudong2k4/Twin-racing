@@ -1,93 +1,99 @@
-<!DOCTYPE html><html lang="vi">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Twin Racing - Sản phẩm</title>
+  <title>Đăng sản phẩm mới</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f2f7f6;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f8fc;
+      padding: 20px;
       color: #333;
     }
-    header {
+    h2 {
+      text-align: center;
+      color: #007bff;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    input, select, button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
       background-color: #007bff;
       color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 24px;
-    }
-    .product-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .product {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 15px;
-      text-align: center;
-    }
-    .product img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
-    .product h3 {
-      margin: 10px 0 5px;
-    }
-    .product p {
-      margin: 5px 0;
-    }
-    .product a {
-      display: inline-block;
-      margin-top: 10px;
-      background-color: #28a745;
-      color: white;
-      padding: 8px 16px;
-      text-decoration: none;
-      border-radius: 8px;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header>Twin Racing - Sản phẩm</header>
-  <div class="product-list" id="product-list"></div>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+  <h2>Đăng sản phẩm mới</h2>
+  <form id="productForm">
+    <input type="text" id="name" placeholder="Tên sản phẩm" required />
+    <input type="number" id="price" placeholder="Giá sản phẩm" required />
+    <input type="text" id="image" placeholder="Link ảnh sản phẩm" required />
+    <input type="text" id="desc" placeholder="Mô tả sản phẩm" />
+    <input type="text" id="link" placeholder="Link liên hệ / mua hàng" />
+    <select id="category">
+      <option value="Ốc titan">Ốc titan</option>
+      <option value="Inox 304">Inox 304</option>
+      <option value="Phụ kiện">Phụ kiện</option>
+    </select>
+    <button type="submit">Đăng sản phẩm</button>
+  </form>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyB9-bU1lK2RxN9A4V99GBrQ9-KYP0ByJTY",
+      apiKey: "AIzaSyB5d...ghiFirebaseKeyVàoĐây",
       authDomain: "twin-racing.firebaseapp.com",
       databaseURL: "https://twin-racing-default-rtdb.firebaseio.com",
       projectId: "twin-racing",
       storageBucket: "twin-racing.appspot.com",
-      messagingSenderId: "686192987832",
-      appId: "1:686192987832:web:4e2bcfd7fc1bd5cb29a64e"
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abc123def456"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const listRef = ref(db, 'sanpham');
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    const productList = document.getElementById('product-list');
+    const form = document.getElementById("productForm");
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
 
-    onValue(listRef, (snapshot) => {
-      productList.innerHTML = '';
-      snapshot.forEach(child => {
-        const data = child.val();
-        const item = document.createElement('div');
-        item.className = 'product';
-        item.innerHTML = `
-          <img src="${data.anh}" alt="${data.ten}" />
-          <h3>${data.ten}</h3>
-          <p>Giá: ${Number(data.gia).toLocaleString()} đ</p>
-          <p>${data.mota || ''}</p>
-          <a href="${data.link}" target="_blank">Liên hệ mua</a>
-        `;
-        productList.appendChild(item);
-      });
+      const data = {
+        name: document.getElementById("name").value,
+        price: Number(document.getElementById("price").value),
+        image: document.getElementById("image").value,
+        desc: document.getElementById("desc").value,
+        link: document.getElementById("link").value,
+        category: document.getElementById("category").value,
+        time: Date.now()
+      };
+
+      db.ref("sanpham").push(data)
+        .then(() => {
+          alert("Đăng sản phẩm thành công!");
+          form.reset();
+        })
+        .catch((err) => {
+          console.error("Lỗi:", err);
+          alert("Đăng sản phẩm thất bại.");
+        });
     });
-  </script></body>
+  </script>
+</body>
 </html>
