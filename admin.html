@@ -2,18 +2,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twin Racing</title>
+  <title>Admin - Twin Racing</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .product { border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin: 10px 0; }
-    img { max-width: 100%; height: auto; border-radius: 8px; }
-    h3 { margin: 0.5em 0 0.2em; }
-    p { margin: 0.2em 0; }
-    a { color: white; background: green; padding: 5px 10px; border-radius: 5px; text-decoration: none; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    form input, form textarea, form select { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; }
+    .product { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 8px; }
+    .actions button { margin-right: 5px; }
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";const firebaseConfig = {
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";const firebaseConfig = {
   apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
   authDomain: "twinracing-5c171.firebaseapp.com",
   projectId: "twinracing-5c171",
@@ -27,31 +25,91 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function loadProducts() {
-  const q = query(collection(db, "products"), orderBy("created", "desc"));
-  const querySnapshot = await getDocs(q);
   const container = document.getElementById("product-list");
-
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
+  container.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "products"));
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
     const div = document.createElement("div");
     div.className = "product";
     div.innerHTML = `
-      <img src="${data.image}" alt="${data.name}" />
-      <h3>${data.name}</h3>
-      <p>${data.desc}</p>
-      <p><strong>Giá:</strong> ${data.price}</p>
-      <a href="${data.link}" target="_blank">Mua ngay</a>
+      <strong>${data.name}</strong> (${data.category})<br>
+      <img src="${data.image}" width="100"><br>
+      <em>${data.price} - ${data.desc}</em><br>
+      <a href="${data.link}" target="_blank">Link mua</a><br>
+      <div class="actions">
+        <button onclick="deleteProduct('${docSnap.id}')">Xoá</button>
+        <button onclick='editProduct("${docSnap.id}", ${JSON.stringify(data).replace(/'/g, "\'")})'>Sửa</button>
+      </div>
     `;
     container.appendChild(div);
   });
 }
 
-window.addEventListener("DOMContentLoaded", loadProducts);
+window.deleteProduct = async (id) => {
+  await deleteDoc(doc(db, "products", id));
+  alert("Đã xoá!");
+  loadProducts();
+}
+
+window.editProduct = (id, data) => {
+  document.getElementById("product-id").value = id;
+  document.getElementById("name").value = data.name;
+  document.getElementById("image").value = data.image;
+  document.getElementById("price").value = data.price;
+  document.getElementById("link").value = data.link;
+  document.getElementById("desc").value = data.desc;
+  document.getElementById("category").value = data.category || "";
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadProducts();
+  const form = document.getElementById("product-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = form["product-id"].value;
+    const name = form.name.value;
+    const image = form.image.value;
+    const price = form.price.value;
+    const link = form.link.value;
+    const desc = form.desc.value;
+    const category = form.category.value;
+
+    if (id) {
+      await updateDoc(doc(db, "products", id), { name, image, price, link, desc, category });
+      alert("Đã cập nhật!");
+    } else {
+      await addDoc(collection(db, "products"), { name, image, price, link, desc, category, created: new Date() });
+      alert("Đã đăng sản phẩm!");
+    }
+
+    form.reset();
+    form["product-id"].value = "";
+    loadProducts();
+  });
+});
 
   </script>
 </head>
 <body>
-  <h1>Sản phẩm Twin Racing</h1>
+  <h2>Đăng / Chỉnh sửa sản phẩm</h2>
+  <form id="product-form">
+    <input type="hidden" name="product-id" id="product-id">
+    <label>Tên sản phẩm: <input name="name" id="name" required></label>
+    <label>Loại sản phẩm:
+      <select name="category" id="category" required>
+        <option value="">--Chọn loại--</option>
+        <option value="Ốc titan">Ốc titan</option>
+        <option value="Ốc Salaya">Ốc Salaya</option>
+        <option value="Phụ kiện inox">Phụ kiện inox</option>
+      </select>
+    </label>
+    <label>Link ảnh: <input name="image" id="image" required></label>
+    <label>Giá: <input name="price" id="price" required></label>
+    <label>Link mua: <input name="link" id="link" required></label>
+    <label>Mô tả: <textarea name="desc" id="desc"></textarea></label>
+    <button type="submit">Lưu</button>
+  </form>  <h3>Danh sách sản phẩm</h3>
   <div id="product-list"></div>
 </body>
 </html>
