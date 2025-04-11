@@ -1,85 +1,102 @@
-<!DOCTYPE html><html lang="vi">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Twin Racing</title>
+  <meta charset="UTF-8" />
+  <title>Quản lý sản phẩm - Twin Racing</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    input, select, textarea { width: 100%; padding: 8px; margin: 6px 0; }
+    button { padding: 8px 12px; margin-top: 10px; }
+    .product-item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+  </style>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";const firebaseConfig = {
-  apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
-  authDomain: "twinracing-5c171.firebaseapp.com",
-  projectId: "twinracing-5c171",
-  storageBucket: "twinracing-5c171.appspot.com",
-  messagingSenderId: "935865625166",
-  appId: "1:935865625166:web:758b879ec96eecda18b11f",
-  measurementId: "G-GBM4MPMB7P"
-};
+    // Firebase setup
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
+      authDomain: "twinracing-5c171.firebaseapp.com",
+      projectId: "twinracing-5c171",
+      storageBucket: "twinracing-5c171.appspot.com",
+      messagingSenderId: "935865625166",
+      appId: "1:935865625166:web:758b879ec96eecda18b11f",
+      measurementId: "G-GBM4MPMB7P",
+      databaseURL: "https://twinracing-5c171-default-rtdb.firebaseio.com/"
+    };
 
-const sanPhamRef = collection(db, "sanpham");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-const form = document.getElementById("form-sanpham");
-const danhSach = document.getElementById("danhsach-sanpham");
+    // Thêm sản phẩm
+    window.themSanPham = () => {
+      const ten = document.getElementById("ten").value;
+      const loai = document.getElementById("loai").value;
+      const anh = document.getElementById("anh").value || "https://via.placeholder.com/150";
+      const gia = parseInt(document.getElementById("gia").value || 0);
+      const link = document.getElementById("link").value;
+      const moTa = document.getElementById("moTa").value;
 
-async function taiDanhSach() {
-  danhSach.innerHTML = "";
-  const querySnapshot = await getDocs(sanPhamRef);
-  querySnapshot.forEach((docItem) => {
-    const data = docItem.data();
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <hr>
-      <p><strong>${data.ten}</strong> - ${data.loai} - ${data.gia}đ</p>
-      <img src="${data.anh}" width="100"><br>
-      <p>${data.mota}</p>
-      <button onclick="xoaSanPham('${docItem.id}')">Xoá</button>
-    `;
-    danhSach.appendChild(div);
-  });
-}
+      const data = { ten, loai, anh, gia, link, moTa };
+      push(ref(db, "sanpham"), data);
+      document.getElementById("form").reset();
+    };
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const ten = form.ten.value;
-  const loai = form.loai.value;
-  const anh = form.anh.value || "https://via.placeholder.com/150";
-  const gia = parseInt(form.gia.value);
-  const linkmua = form.linkmua.value;
-  const mota = form.mota.value;
+    // Hiển thị sản phẩm
+    const danhSach = document.getElementById("danhsach");
+    onValue(ref(db, "sanpham"), (snapshot) => {
+      danhSach.innerHTML = "";
+      snapshot.forEach(child => {
+        const sp = child.val();
+        const key = child.key;
+        danhSach.innerHTML += `
+          <div class="product-item">
+            <img src="${sp.anh}" width="100" /><br>
+            <strong>${sp.ten}</strong><br>
+            Giá: ${sp.gia.toLocaleString()}<br>
+            <a href="${sp.link}" target="_blank">Mua</a><br>
+            <em>${sp.moTa}</em><br>
+            <button onclick="xoaSanPham('${key}')">Xoá</button>
+          </div>
+        `;
+      });
+    });
 
-  await addDoc(sanPhamRef, { ten, loai, anh, gia, linkmua, mota });
-  form.reset();
-  taiDanhSach();
-});
-
-window.xoaSanPham = async (id) => {
-  await deleteDoc(doc(db, "sanpham", id));
-  taiDanhSach();
-}
-
-taiDanhSach();
-
+    // Xoá sản phẩm
+    window.xoaSanPham = (key) => {
+      remove(ref(db, "sanpham/" + key));
+    };
   </script>
 </head>
 <body>
-  <h1>Đăng / Chỉnh sửa sản phẩm</h1>
-  <form id="form-sanpham">
-    <label>Tên sản phẩm: <input name="ten" required></label><br>
-    <label>Loại sản phẩm:
-      <select name="loai">
-        <option value="Ốc titan">Ốc titan</option>
-        <option value="Phụ kiện inox">Phụ kiện inox</option>
-      </select>
-    </label><br>
-    <label>Link ảnh: <input name="anh" placeholder="URL ảnh..."></label><br>
-    <label>Giá: <input type="number" name="gia" required></label><br>
-    <label>Link mua: <input name="linkmua"></label><br>
-    <label>Mô tả: <textarea name="mota"></textarea></label><br>
+  <h2>Đăng / Chỉnh sửa sản phẩm</h2>
+  <form id="form" onsubmit="themSanPham(); return false;">
+    <label>Tên sản phẩm:</label>
+    <input id="ten" required />
+
+    <label>Loại sản phẩm:</label>
+    <select id="loai">
+      <option>Ốc titan</option>
+      <option>Phụ kiện inox</option>
+      <option>Khác</option>
+    </select>
+
+    <label>Link ảnh:</label>
+    <input id="anh" placeholder="https://..." />
+
+    <label>Giá:</label>
+    <input id="gia" type="number" required />
+
+    <label>Link mua:</label>
+    <input id="link" placeholder="https://..." />
+
+    <label>Mô tả:</label>
+    <textarea id="moTa"></textarea>
+
     <button type="submit">Lưu</button>
   </form>
-  <h2>Danh sách sản phẩm</h2>
-  <div id="danhsach-sanpham"></div>
+
+  <h3>Danh sách sản phẩm</h3>
+  <div id="danhsach"></div>
 </body>
 </html>
