@@ -2,118 +2,129 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kaito Review – Phụ kiện xe máy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script defer src="app.js"></script>
+  <title>Twin Racing - Kaito Review</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <style>
     body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: #f3f8f7;
-      color: #333;
+      background: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
     }
     header {
+      background: #222;
+      color: white;
+      padding: 1rem 0;
       text-align: center;
-      background-color: #ffffff;
-      padding: 16px 10px 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 999;
     }
-    header img {
-      max-height: 70px;
-      display: block;
-      margin: 0 auto 8px;
+    .logo {
+      max-width: 150px;
+      margin: 0 auto;
     }
-    h1 {
-      font-size: 24px;
-      margin: 0;
-    }
-    .products {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .product {
-      background: #fff;
+    .product-card {
       border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      transition: transform 0.2s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
     }
-    .product:hover {
-      transform: translateY(-5px);
+    .product-card:hover {
+      transform: scale(1.03);
     }
-    .product img {
-      width: 100%;
+    .product-img {
       height: 180px;
       object-fit: cover;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
     }
-    .product-content {
-      padding: 15px;
-    }
-    .product-content h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: #333;
-    }
-    .product-content p {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: #555;
-    }
-    .product-content .price {
-      font-weight: bold;
-      color: #e91e63;
-    }
-    .product-content a {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 12px;
-      background-color: #2196f3;
+    .category-badge {
+      font-size: 0.8rem;
+      background-color: #007bff;
       color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 14px;
+      border-radius: 5px;
+      padding: 2px 6px;
     }
-    .product-content a:hover {
-      background-color: #1976d2;
+    .floating-menu {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .search-bar {
+      max-width: 300px;
+      margin: 1rem auto;
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="./logo.png" alt="Logo">
-    <h1>Kaito Review – Phụ kiện xe máy</h1>
-  </header>
-  <div class="products" id="product-list"></div>  <script>
+  <div class="floating-menu">
+    <select id="categoryFilter" class="form-select">
+      <option value="">Tất cả</option>
+      <option value="Titan">Ốc Titan</option>
+      <option value="Inox">Phụ kiện Inox</option>
+      <option value="Salaya">Ốc Salaya</option>
+    </select>
+  </div>  <header>
+    <img src="logo.png" class="logo" alt="Kaito Review">
+    <h1 class="mt-2">Twin Racing</h1>
+  </header>  <div class="container">
+    <input type="text" id="searchInput" class="form-control search-bar" placeholder="Tìm kiếm sản phẩm...">
+    <div class="row" id="productList"></div>
+  </div>  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>  <script>
     const firebaseConfig = {
-      databaseURL: "https://twinracing-5c171-default-rtdb.asia-southeast1.firebasedatabase.app/"
+      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
+      authDomain: "twinracing-5c171.firebaseapp.com",
+      databaseURL: "https://twinracing-5c171-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "twinracing-5c171",
+      storageBucket: "twinracing-5c171.appspot.com",
+      messagingSenderId: "935865625166",
+      appId: "1:935865625166:web:758b879ec96eecda18b11f"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const productList = document.getElementById("product-list");
-    db.ref("products").on("value", snapshot => {
-      productList.innerHTML = "";
-      const data = snapshot.val();
-      if (data) {
-        Object.values(data).forEach(item => {
-          const div = document.createElement("div");
-          div.className = "product";
-          div.innerHTML = `
-            <img src="${item.image}" alt="${item.name}">
-            <div class="product-content">
-              <h3>${item.name}</h3>
-              <p>${item.description || ''}</p>
-              <div class="price">${item.price}₫</div>
-              <a href="${item.link}" target="_blank">Mua ngay</a>
-            </div>
-          `;
-          productList.appendChild(div);
+    const productList = document.getElementById("productList");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+
+    function renderProduct(key, product) {
+      const col = document.createElement("div");
+      col.className = "col-md-4 mb-4";
+      col.innerHTML = `
+        <div class="card product-card">
+          <img src="${product.image}" class="card-img-top product-img" alt="${product.name}">
+          <div class="card-body">
+            <h5 class="card-title">${product.name}</h5>
+            <p class="card-text">${product.description}</p>
+            <p><span class="category-badge">${product.category}</span></p>
+            <p><strong>${product.price}đ</strong></p>
+            <a href="${product.link}" class="btn btn-success" target="_blank">Mua ngay</a>
+          </div>
+        </div>
+      `;
+      productList.appendChild(col);
+    }
+
+    function loadProducts() {
+      db.ref("sanpham").on("value", (snapshot) => {
+        productList.innerHTML = "";
+        const search = searchInput.value.toLowerCase();
+        const filterCategory = categoryFilter.value;
+        snapshot.forEach(child => {
+          const key = child.key;
+          const product = child.val();
+          const nameMatch = product.name.toLowerCase().includes(search);
+          const categoryMatch = filterCategory === "" || product.category === filterCategory;
+          if (nameMatch && categoryMatch) renderProduct(key, product);
         });
-      }
-    });
+      });
+    }
+
+    searchInput.addEventListener("input", loadProducts);
+    categoryFilter.addEventListener("change", loadProducts);
+    window.addEventListener("load", loadProducts);
   </script></body>
 </html>
