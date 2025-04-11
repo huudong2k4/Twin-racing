@@ -4,117 +4,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Twin Racing - Sản phẩm</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fff;
-      color: #222;
-      padding: 20px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    h1 {
-      font-size: 2rem;
-      color: #007bff;
-    }
-    .sanpham-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: #f9f9f9;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      transition: 0.3s;
-    }
-    .card:hover {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    .card h3 {
-      margin-bottom: 5px;
-      font-size: 1.1rem;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f2f7f6;
       color: #333;
     }
-    .card p {
-      font-size: 0.95rem;
-      margin-bottom: 6px;
-    }
-    .card .gia {
-      font-weight: bold;
-      color: #e53935;
-    }
-    .card a {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 8px 12px;
+    header {
       background-color: #007bff;
       color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.9rem;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
     }
-    .card a:hover {
-      background-color: #0056b3;
+    .product-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .product {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      text-align: center;
+    }
+    .product img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+    .product h3 {
+      margin: 10px 0 5px;
+    }
+    .product p {
+      margin: 5px 0;
+    }
+    .product a {
+      display: inline-block;
+      margin-top: 10px;
+      background-color: #28a745;
+      color: white;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Twin Racing - Sản phẩm</h1>
-  </header>
-  <div class="sanpham-container" id="list"></div>  <script type="module">
+  <header>Twin Racing - Sản phẩm</header>
+  <div class="product-list" id="product-list"></div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
-      authDomain: "twinracing-5c171.firebaseapp.com",
-      projectId: "twinracing-5c171",
-      storageBucket: "twinracing-5c171.appspot.com",
-      messagingSenderId: "935865625166",
-      appId: "1:935865625166:web:758b879ec96eecda18b11f",
-      measurementId: "G-GBM4MPMB7P",
-      databaseURL: "https://twinracing-5c171-default-rtdb.firebaseio.com/"
+      apiKey: "AIzaSyB9-bU1lK2RxN9A4V99GBrQ9-KYP0ByJTY",
+      authDomain: "twin-racing.firebaseapp.com",
+      databaseURL: "https://twin-racing-default-rtdb.firebaseio.com",
+      projectId: "twin-racing",
+      storageBucket: "twin-racing.appspot.com",
+      messagingSenderId: "686192987832",
+      appId: "1:686192987832:web:4e2bcfd7fc1bd5cb29a64e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const list = document.getElementById("list");
+    const listRef = ref(db, 'sanpham');
 
-    onValue(ref(db, "sanpham"), (snapshot) => {
-      list.innerHTML = "";
-      const data = snapshot.val();
-      if (data) {
-        Object.values(data).forEach(sp => {
-          const item = document.createElement("div");
-          item.className = "card";
-          item.innerHTML = `
-            <img src="${sp.anh}" alt="${sp.ten}" />
-            <h3>${sp.ten}</h3>
-            <p class="gia">Giá: ${sp.gia.toLocaleString()}đ</p>
-            <p>${sp.moTa}</p>
-            <a href="${sp.link}" target="_blank">Mua ngay</a>
-          `;
-          list.appendChild(item);
-        });
-      } else {
-        list.innerHTML = "<p>Chưa có sản phẩm nào.</p>";
-      }
+    const productList = document.getElementById('product-list');
+
+    onValue(listRef, (snapshot) => {
+      productList.innerHTML = '';
+      snapshot.forEach(child => {
+        const data = child.val();
+        const item = document.createElement('div');
+        item.className = 'product';
+        item.innerHTML = `
+          <img src="${data.anh}" alt="${data.ten}" />
+          <h3>${data.ten}</h3>
+          <p>Giá: ${Number(data.gia).toLocaleString()} đ</p>
+          <p>${data.mota || ''}</p>
+          <a href="${data.link}" target="_blank">Liên hệ mua</a>
+        `;
+        productList.appendChild(item);
+      });
     });
   </script></body>
 </html>
