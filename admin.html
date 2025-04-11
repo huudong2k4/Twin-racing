@@ -2,87 +2,141 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đăng sản phẩm mới</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Đăng sản phẩm</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f8fc;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
       padding: 20px;
-      color: #333;
     }
     h2 {
-      text-align: center;
-      color: #007bff;
+      color: #333;
     }
     form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       max-width: 500px;
       margin: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
     }
-    input, select, button {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 6px;
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
       border: 1px solid #ccc;
+      border-radius: 4px;
     }
     button {
-      background-color: #007bff;
+      background: #007bff;
       color: white;
+      padding: 10px 16px;
       border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h2>Đăng sản phẩm mới</h2>
-  <form id="productForm">
-    <input type="text" id="name" placeholder="Tên sản phẩm" required />
-    <input type="number" id="price" placeholder="Giá sản phẩm" required />
-    <input type="text" id="image" placeholder="Link ảnh sản phẩm" required />
-    <input type="text" id="desc" placeholder="Mô tả sản phẩm" />
-    <input type="text" id="link" placeholder="Link liên hệ / mua hàng" />
-    <select id="category">
+  <form id="postForm">
+    <label>Tên sản phẩm:</label>
+    <input type="text" id="name" required />
+
+    <label>Mô tả:</label>
+    <textarea id="desc" required></textarea>
+
+    <label>Giá:</label>
+    <input type="number" id="price" required />
+
+    <label>Link ảnh:</label>
+    <input type="url" id="image" required />
+
+    <label>Link mua:</label>
+    <input type="url" id="link" required />
+
+    <label>Loại sản phẩm:</label>
+    <select id="category" required>
       <option value="Ốc titan">Ốc titan</option>
       <option value="Inox 304">Inox 304</option>
       <option value="Phụ kiện">Phụ kiện</option>
     </select>
+
     <button type="submit">Đăng sản phẩm</button>
   </form>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <script>
     const firebaseConfig = {
-      databaseURL: "https://twin-racing-default-rtdb.firebaseio.com/",
+      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
+      authDomain: "twinracing-5c171.firebaseapp.com",
+      databaseURL: "https://twinracing-5c171-default-rtdb.firebaseio.com",
+      projectId: "twinracing-5c171",
+      storageBucket: "twinracing-5c171.appspot.com",
+      messagingSenderId: "935865625166",
+      appId: "1:935865625166:web:758b879ec96eecda18b11f"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    const form = document.getElementById('productForm');
-    form.addEventListener('submit', async (e) => {
+    firebase.initializeApp(firebaseConfig);
+
+    function showAlert(message, type = "success") {
+      const alert = document.createElement("div");
+      alert.textContent = message;
+      alert.style.position = "fixed";
+      alert.style.top = "20px";
+      alert.style.right = "20px";
+      alert.style.padding = "10px 16px";
+      alert.style.background = type === "success" ? "#28a745" : "#dc3545";
+      alert.style.color = "#fff";
+      alert.style.borderRadius = "5px";
+      alert.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
+      alert.style.zIndex = "1000";
+      document.body.appendChild(alert);
+      setTimeout(() => alert.remove(), 3000);
+    }
+
+    document.getElementById("postForm").addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const data = {
-        name: document.getElementById('name').value,
-        price: parseInt(document.getElementById('price').value),
-        image: document.getElementById('image').value,
-        desc: document.getElementById('desc').value,
-        link: document.getElementById('link').value,
-        category: document.getElementById('category').value,
+      const name = document.getElementById("name").value;
+      const desc = document.getElementById("desc").value;
+      const price = parseInt(document.getElementById("price").value);
+      const image = document.getElementById("image").value;
+      const link = document.getElementById("link").value;
+      const category = document.getElementById("category").value;
+
+      if (!name || !desc || !price || !image || !link || !category) {
+        showAlert("Vui lòng điền đầy đủ thông tin", "error");
+        return;
+      }
+
+      const newPost = {
+        name,
+        desc,
+        price,
+        image,
+        link,
+        category,
         time: Date.now()
       };
 
-      try {
-        await db.ref('sanpham').push(data);
-        alert("Đăng sản phẩm thành công!");
-        form.reset();
-      } catch (err) {
-        alert("Lỗi khi đăng sản phẩm!");
-        console.error(err);
-      }
+      firebase.database().ref("sanpham").push(newPost)
+        .then(() => {
+          showAlert("Đăng sản phẩm thành công!");
+          document.getElementById("postForm").reset();
+        })
+        .catch(err => {
+          console.error(err);
+          showAlert("Đăng thất bại!", "error");
+        });
     });
   </script>
 </body>
