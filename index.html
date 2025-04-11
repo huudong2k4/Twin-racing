@@ -1,88 +1,124 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kaito Racing</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f8f9fa;
-      margin: 0;
-      padding: 20px;
+      background-color: #f7f7f7;
     }
-    .product-card {
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .product-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    header {
+      background-color: #000;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
     }
     .product-img {
-      height: 200px;
+      height: 160px;
       object-fit: cover;
     }
+    .product-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
     .like-btn {
-      background: none;
       border: none;
+      background: transparent;
+      font-size: 1.2rem;
+      color: #ccc;
+      transition: color 0.2s;
+    }
+    .like-btn.liked {
       color: red;
-      font-size: 20px;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="text-center mb-4">Kaito Racing - Sản phẩm nổi bật</h2>
-    <div class="row" id="productList"></div>
-  </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
-      authDomain: "twinracing-5c171.firebaseapp.com",
-      databaseURL: "https://twinracing-5c171-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "twinracing-5c171",
-      storageBucket: "twinracing-5c171.appspot.com",
-      messagingSenderId: "935865625166",
-      appId: "1:935865625166:web:758b879ec96eecda18b11f"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<header>
+  <h1>Kaito Racing</h1>
+  <p style="margin:0;">TikTok: <a href="https://tiktok.com/@huudong0003" target="_blank" style="color:#fff;">@huudong0003</a></p>
+</header>
 
-    const productList = document.getElementById("productList");
+<div class="container py-4">
+  <input id="searchInput" type="text" class="form-control mb-3" placeholder="Tìm kiếm sản phẩm...">
+  <div id="productList" class="row g-3"></div>
+</div>
 
-    function renderProduct(key, product) {
-      const col = document.createElement("div");
-      col.className = "col-md-6 mb-4";
-      col.innerHTML = `
-        <div class="card product-card">
-          <img src="${product.image}" class="card-img-top product-img" alt="${product.name}">
-          <div class="card-body">
-            <h5 class="card-title">${product.name}</h5>
-            <p>${product.description}</p>
-            <p><strong>${product.price}đ</strong></p>
-            <a href="${product.link}" target="_blank" class="btn btn-dark">Xem trên TikTok</a>
-            <button class="like-btn" onclick="this.classList.toggle('liked')">♥</button>
-          </div>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    databaseURL: "https://twinracing-default-rtdb.asia-southeast1.firebasedatabase.app"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const productList = document.getElementById("productList");
+  const searchInput = document.getElementById("searchInput");
+
+  function renderProduct(id, product) {
+    const col = document.createElement("div");
+    col.className = "col-6 col-md-4 col-lg-3";
+    col.innerHTML = `
+      <div class="card product-card shadow-sm">
+        <img src="${product.image}" class="card-img-top product-img" alt="${product.name}">
+        <div class="card-body">
+          <h6 class="card-title d-flex justify-content-between align-items-center">
+            ${product.name}
+            <button class="like-btn" data-id="${id}">
+              <i class="fas fa-heart"></i>
+            </button>
+          </h6>
+          <p class="card-text small">${product.description}</p>
+          <p><strong>${Number(product.price).toLocaleString()}đ</strong></p>
+          <a href="${product.link}" target="_blank" class="btn btn-success btn-sm w-100">Xem trên TikTok</a>
         </div>
-      `;
-      productList.appendChild(col);
-    }
+      </div>
+    `;
+    productList.appendChild(col);
+  }
 
-    function loadProducts() {
-      db.ref("sanpham").once("value", snapshot => {
-        productList.innerHTML = "";
-        snapshot.forEach(child => {
-          renderProduct(child.key, child.val());
-        });
+  function updateLikeButtons() {
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      const id = btn.getAttribute("data-id");
+      if (localStorage.getItem(`liked-${id}`)) {
+        btn.classList.add("liked");
+      }
+      btn.onclick = () => {
+        if (btn.classList.contains("liked")) {
+          btn.classList.remove("liked");
+          localStorage.removeItem(`liked-${id}`);
+        } else {
+          btn.classList.add("liked");
+          localStorage.setItem(`liked-${id}`, "true");
+        }
+      };
+    });
+  }
+
+  function loadProducts() {
+    db.ref("sanpham").on("value", (snapshot) => {
+      productList.innerHTML = "";
+      const search = searchInput.value.toLowerCase();
+      snapshot.forEach(child => {
+        const product = child.val();
+        if (product.name.toLowerCase().includes(search)) {
+          renderProduct(child.key, product);
+        }
       });
-    }
+      setTimeout(updateLikeButtons, 100);
+    });
+  }
 
-    window.onload = loadProducts;
-  </script>
+  searchInput.addEventListener("input", loadProducts);
+  loadProducts();
+</script>
 </body>
 </html>
