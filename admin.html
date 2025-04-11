@@ -1,8 +1,56 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Đăng sản phẩm - Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Đăng sản phẩm - Twin Racing</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f8f9fa;
+      max-width: 500px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #007bff;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Đăng sản phẩm mới</h2>
+  <form id="form">
+    <input name="ten" placeholder="Tên sản phẩm" required />
+    <input name="gia" type="number" placeholder="Giá (vd: 35000)" required />
+    <input name="anh" placeholder="Link ảnh sản phẩm" required />
+    <textarea name="moTa" placeholder="Mô tả sản phẩm" required></textarea>
+    <input name="link" placeholder="Link mua (Zalo, Shopee...)" required />
+    <select name="loai" required>
+      <option value="">-- Chọn loại sản phẩm --</option>
+      <option value="Ốc titan">Ốc titan</option>
+      <option value="Ốc salaya">Ốc salaya</option>
+      <option value="Phụ kiện inox">Phụ kiện inox</option>
+    </select>
+    <button type="submit">Đăng sản phẩm</button>
+  </form>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
@@ -21,7 +69,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    document.getElementById("form").addEventListener("submit", async (e) => {
+    const form = document.getElementById("form");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const data = {
@@ -33,26 +83,15 @@
         loai: form.loai.value
       };
 
-      await push(ref(db, "sanpham"), data);
-      alert("Đã đăng sản phẩm!");
-      form.reset();
+      try {
+        await push(ref(db, "sanpham"), data);
+        alert("Đăng sản phẩm thành công!");
+        form.reset();
+      } catch (error) {
+        console.error("Lỗi khi đăng:", error);
+        alert("Có lỗi xảy ra. Kiểm tra console.");
+      }
     });
   </script>
-</head>
-<body>
-  <h2>Đăng sản phẩm mới</h2>
-  <form id="form">
-    <input name="ten" placeholder="Tên sản phẩm" required><br><br>
-    <input name="gia" type="number" placeholder="Giá (vd: 35000)" required><br><br>
-    <input name="anh" placeholder="Link ảnh" required><br><br>
-    <textarea name="moTa" placeholder="Mô tả" required></textarea><br><br>
-    <input name="link" placeholder="Link mua (Zalo...)" required><br><br>
-    <select name="loai">
-      <option>Ốc titan</option>
-      <option>Phụ kiện inox</option>
-      <option>Khác</option>
-    </select><br><br>
-    <button type="submit">Đăng sản phẩm</button>
-  </form>
 </body>
 </html>
