@@ -1,93 +1,110 @@
-<!DOCTYPE html><html lang="vi"><head>
+<!DOCTYPE html><html lang="vi">
+<head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sản phẩm - Twin Racing</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
-</head><body class="bg-white text-gray-800">
-  <!-- Header -->
-  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold">Twin Racing</h1>
-    <div class="md:hidden">
-      <button id="menu-toggle" class="focus:outline-none">☰</button>
-    </div>
-    <nav id="menu" class="hidden md:flex space-x-4">
-      <a href="#" onclick="filterCategory('Tất cả')">Tất cả</a>
-      <a href="#" onclick="filterCategory('Ốc titan')">Ốc titan</a>
-      <a href="#" onclick="filterCategory('Ốc salaya')">Ốc salaya</a>
-      <a href="#" onclick="filterCategory('Phụ kiện inox')">Phụ kiện inox</a>
-    </nav>
-  </header>  <!-- Search & Filter -->  <section class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <input id="searchInput" type="text" placeholder="Tìm kiếm tên sản phẩm..." class="border p-2 rounded">
-    <select id="categoryFilter" class="border p-2 rounded">
+  <title>Trang chủ - Twin Racing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; margin: 0; padding: 20px; background: #f9f9f9; }
+    header { text-align: center; padding-bottom: 20px; }
+    h1 { color: #1e90ff; }
+    .filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .filters input, .filters select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; min-width: 150px; }
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+    .product { background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-align: center; }
+    .product img { max-width: 100%; height: 140px; object-fit: cover; border-radius: 8px; }
+    .product h3 { margin: 10px 0 5px; }
+    .product p { margin: 5px 0; }
+    .product a { display: inline-block; margin-top: 8px; background: #1e90ff; color: #fff; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";const firebaseConfig = {
+  apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
+  authDomain: "twinracing-5c171.firebaseapp.com",
+  projectId: "twinracing-5c171",
+  storageBucket: "twinracing-5c171.appspot.com",
+  messagingSenderId: "935865625166",
+  appId: "1:935865625166:web:758b879ec96eecda18b11f",
+  measurementId: "G-GBM4MPMB7P",
+  databaseURL: "https://twinracing-5c171-default-rtdb.firebaseio.com/"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const sanPhamDiv = document.getElementById("sanpham");
+const searchInput = document.getElementById("search");
+const categorySelect = document.getElementById("category");
+const priceSelect = document.getElementById("price");
+
+function hienThiSanPham(ds) {
+  sanPhamDiv.innerHTML = "";
+  ds.forEach(sp => {
+    const el = document.createElement("div");
+    el.className = "product";
+    el.innerHTML = `
+      <img src="${sp.anh}" alt="${sp.ten}" />
+      <h3>${sp.ten}</h3>
+      <p>${sp.moTa}</p>
+      <p><strong>${sp.gia.toLocaleString()}đ</strong></p>
+      <a href="${sp.link}" target="_blank">Mua ngay</a>
+    `;
+    sanPhamDiv.appendChild(el);
+  });
+}
+
+function locVaHienThi(data) {
+  const keyword = searchInput.value.toLowerCase();
+  const loai = categorySelect.value;
+  const gia = priceSelect.value;
+
+  const loc = data.filter(sp => {
+    const matchTen = sp.ten.toLowerCase().includes(keyword);
+    const matchLoai = loai === "" || sp.loai === loai;
+    const matchGia =
+      gia === ""
+        || (gia === "1" && sp.gia < 50000)
+        || (gia === "2" && sp.gia >= 50000 && sp.gia <= 200000)
+        || (gia === "3" && sp.gia > 200000);
+    return matchTen && matchLoai && matchGia;
+  });
+  hienThiSanPham(loc);
+}
+
+onValue(ref(db, "sanpham"), (snapshot) => {
+  const list = [];
+  snapshot.forEach(child => list.push(child.val()));
+  window.spList = list;
+  locVaHienThi(list);
+});
+
+window.onload = () => {
+  searchInput.addEventListener("input", () => locVaHienThi(window.spList));
+  categorySelect.addEventListener("change", () => locVaHienThi(window.spList));
+  priceSelect.addEventListener("change", () => locVaHienThi(window.spList));
+};
+
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Sản phẩm - Twin Racing</h1>
+  </header>
+  <div class="filters">
+    <input id="search" placeholder="Tìm kiếm tên sản phẩm...">
+    <select id="category">
       <option value="">Tất cả loại</option>
-      <option value="Ốc titan">Ốc titan</option>
-      <option value="Ốc salaya">Ốc salaya</option>
-      <option value="Phụ kiện inox">Phụ kiện inox</option>
+      <option>Ốc titan</option>
+      <option>Phụ kiện inox</option>
+      <option>Khác</option>
     </select>
-    <select id="priceFilter" class="border p-2 rounded">
+    <select id="price">
       <option value="">Tất cả giá</option>
-      <option value="50000">Dưới 50k</option>
-      <option value="100000">Dưới 100k</option>
+      <option value="1">Dưới 50k</option>
+      <option value="2">50k - 200k</option>
+      <option value="3">Trên 200k</option>
     </select>
-  </section>  <!-- Product list -->  <section id="product-list" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></section>  <!-- Firebase config -->  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
-      authDomain: "twinracing-5c171.firebaseapp.com",
-      projectId: "twinracing-5c171",
-      storageBucket: "twinracing-5c171.appspot.com",
-      messagingSenderId: "935865625166",
-      appId: "1:935865625166:web:758b879ec96eecda18b11f",
-      measurementId: "G-GBM4MPMB7P"
-    };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const productList = document.getElementById("product-list");
-
-    let allProducts = [];
-
-    db.collection("products").onSnapshot(snapshot => {
-      allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderProducts(allProducts);
-    });
-
-    function renderProducts(products) {
-      productList.innerHTML = products.map(p => `
-        <div class="border rounded p-4 shadow">
-          <img src="${p.image}" alt="${p.title}" class="w-full h-40 object-cover mb-2">
-          <h2 class="font-bold text-lg">${p.title}</h2>
-          <p class="text-sm text-gray-600 mb-1">${p.category}</p>
-          <p class="text-red-600 font-semibold mb-2">${p.price.toLocaleString()}đ</p>
-          <button class="bg-blue-600 text-white px-4 py-2 rounded">Mua ngay</button>
-        </div>
-      `).join("");
-    }
-
-    document.getElementById("searchInput").addEventListener("input", applyFilters);
-    document.getElementById("categoryFilter").addEventListener("change", applyFilters);
-    document.getElementById("priceFilter").addEventListener("change", applyFilters);
-
-    function applyFilters() {
-      const keyword = document.getElementById("searchInput").value.toLowerCase();
-      const category = document.getElementById("categoryFilter").value;
-      const priceLimit = parseInt(document.getElementById("priceFilter").value);
-
-      const filtered = allProducts.filter(p => {
-        return (
-          (!category || p.category === category) &&
-          (!priceLimit || p.price <= priceLimit) &&
-          (!keyword || p.title.toLowerCase().includes(keyword))
-        );
-      });
-
-      renderProducts(filtered);
-    }
-
-    // Toggle menu on mobile
-    document.getElementById("menu-toggle").addEventListener("click", () => {
-      const menu = document.getElementById("menu");
-      menu.classList.toggle("hidden");
-    });
-  </script></body></html>
+  </div>
+  <div id="sanpham" class="products"></div>
+</body>
+</html>
