@@ -1,135 +1,92 @@
-<!DOCTYPE html>
-<html lang="vi">
+<!DOCTYPE html><html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Twin Racing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twin Racing - Sản phẩm</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      background: #f1f3f6;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f7f7;
     }
     header {
-      background: #007bff;
+      background: #333;
       color: white;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
     }
-    .logo {
-      font-size: 20px;
-      font-weight: bold;
-    }
-    nav {
-      display: flex;
-      gap: 12px;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .container {
-      padding: 20px;
+    .product-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
     }
-    .card {
+    .product {
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      padding: 12px;
+      border-radius: 15px;
+      padding: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
     }
-    .card img {
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    .product img {
       width: 100%;
-      border-radius: 6px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
     }
-    .card h3 {
-      font-size: 18px;
-      margin: 8px 0 4px;
+    .product h3 {
+      margin: 10px 0 5px;
+      font-size: 1.1rem;
     }
-    .card p {
-      font-size: 14px;
-      margin: 0 0 8px;
+    .product p {
+      font-size: 0.95rem;
+      color: #555;
     }
-    .card a {
+    .price {
+      font-weight: bold;
+      color: #e91e63;
+      margin-top: 5px;
+    }
+    .type {
+      font-style: italic;
+      color: #777;
+    }
+    .buy-btn {
       display: inline-block;
-      background: #007bff;
+      margin-top: 10px;
+      background: #2196f3;
       color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
       text-decoration: none;
-      padding: 8px 12px;
-      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">Twin Racing</div>
-    <nav>
-      <a href="#">Tất cả</a>
-      <a href="#" onclick="filterCategory('Ốc titan')">Ốc titan</a>
-      <a href="#" onclick="filterCategory('Inox 304')">Inox 304</a>
-      <a href="#" onclick="filterCategory('Phụ kiện')">Phụ kiện</a>
-    </nav>
-  </header>
-
-  <div class="container" id="productContainer">
-    <!-- Sản phẩm sẽ được thêm vào đây -->
-  </div>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
-      authDomain: "twinracing-5c171.firebaseapp.com",
-      databaseURL: "https://twinracing-5c171-default-rtdb.firebaseio.com",
-      projectId: "twinracing-5c171",
-      storageBucket: "twinracing-5c171.appspot.com",
-      messagingSenderId: "935865625166",
-      appId: "1:935865625166:web:758b879ec96eecda18b11f"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let allProducts = [];
-
-    function renderProducts(products) {
-      const container = document.getElementById("productContainer");
-      container.innerHTML = "";
-      products.forEach(item => {
-        container.innerHTML += `
-          <div class="card">
-            <img src="${item.image}" alt="${item.name}">
-            <h3>${item.name}</h3>
-            <p>${item.desc}</p>
-            <p><b>${item.price.toLocaleString()}đ</b></p>
-            <a href="${item.link}" target="_blank">Mua ngay</a>
-          </div>
-        `;
+  <header>Twin Racing - Sản phẩm mới nhất</header>
+  <div class="product-grid" id="productGrid"></div>  <script>
+    fetch("https://twinracing-5c171-default-rtdb.asia-southeast1.firebasedatabase.app/products.json")
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById("productGrid");
+        Object.values(data).forEach(product => {
+          const item = document.createElement("div");
+          item.className = "product";
+          item.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p class="type">${product.type}</p>
+            <p class="price">${product.price.toLocaleString()}₫</p>
+            <p>${product.description}</p>
+            <a href="${product.buyLink}" target="_blank" class="buy-btn">Mua ngay</a>
+          `;
+          grid.appendChild(item);
+        });
       });
-    }
-
-    function filterCategory(cat) {
-      const filtered = allProducts.filter(p => p.category === cat);
-      renderProducts(filtered);
-    }
-
-    // Load sản phẩm từ Firebase
-    db.ref("sanpham").on("value", snapshot => {
-      const data = snapshot.val();
-      allProducts = [];
-      for (let id in data) {
-        allProducts.push(data[id]);
-      }
-      allProducts.sort((a, b) => b.time - a.time);
-      renderProducts(allProducts);
-    });
-  </script>
-</body>
+  </script></body>
 </html>
