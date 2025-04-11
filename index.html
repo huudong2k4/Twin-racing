@@ -15,12 +15,22 @@
       padding: 20px;
       text-align: center;
       color: white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     header h1 {
       margin: 0;
       font-size: 28px;
       font-weight: bold;
+    }
+    .search-bar {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .search-bar input {
+      width: 100%;
+      max-width: 400px;
+      padding: 8px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
     }
     .product-card {
       border: 1px solid #ddd;
@@ -51,6 +61,14 @@
     .btn-tiktok:hover {
       background-color: #444;
     }
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #fff;
+      color: #555;
+      font-size: 14px;
+      border-top: 1px solid #ddd;
+    }
   </style>
 </head>
 <body>
@@ -58,9 +76,17 @@
     <h1>Kaito Racing - Phụ kiện xe chất</h1>
   </header>
 
+  <div class="search-bar container">
+    <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+  </div>
+
   <div class="container my-4">
     <div class="row" id="productList"></div>
   </div>
+
+  <footer>
+    Nguồn: TikTok <a href="https://tiktok.com/@huudong0003" target="_blank">@huudong0003</a>
+  </footer>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -78,14 +104,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const productList = document.getElementById("productList");
+    const searchInput = document.getElementById("searchInput");
 
-    db.ref("sanpham").on("value", (snapshot) => {
-      productList.innerHTML = "";
-      snapshot.forEach(child => {
-        const product = child.val();
-        const col = document.createElement("div");
-        col.className = "col-md-6 mb-4";
-        col.innerHTML = `
+    function renderProduct(product, key) {
+      return `
+        <div class="col-md-6 mb-4">
           <div class="product-card">
             <img src="${product.image}" class="product-img" alt="${product.name}">
             <div class="product-body">
@@ -95,9 +118,34 @@
               <a href="${product.link}" target="_blank" class="btn btn-tiktok">Xem trên TikTok</a>
             </div>
           </div>
-        `;
-        productList.appendChild(col);
+        </div>
+      `;
+    }
+
+    let allProducts = [];
+
+    db.ref("sanpham").on("value", (snapshot) => {
+      allProducts = [];
+      snapshot.forEach(child => {
+        allProducts.push({ ...child.val(), key: child.key });
       });
+      displayProducts(allProducts);
+    });
+
+    function displayProducts(products) {
+      productList.innerHTML = "";
+      products.forEach(product => {
+        productList.innerHTML += renderProduct(product);
+      });
+    }
+
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const filtered = allProducts.filter(p => 
+        p.name.toLowerCase().includes(keyword) || 
+        p.description.toLowerCase().includes(keyword)
+      );
+      displayProducts(filtered);
     });
   </script>
 </body>
