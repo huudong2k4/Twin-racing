@@ -1,130 +1,99 @@
-<!DOCTYPE html><html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twin Racing - Sản phẩm</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<!DOCTYPE html><html lang="vi"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twin Racing</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://twinracing-5c171-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
   <style>
     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #f1f1f1, #ffffff);
+      background: linear-gradient(to bottom right, #f0f4ff, #ffffff);
     }
     header {
-      background: #0d47a1;
-      color: white;
-      padding: 1rem;
       text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 2rem 1rem;
     }
-    nav {
-      background: #1565c0;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      padding: 10px;
+    header img {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto 1rem;
     }
-    nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
+    header h1 {
+      font-size: 2.5rem;
+      color: #222;
     }
-    .product-grid {
+    .product-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      padding: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
     }
-    .product {
-      background: #ffffff;
+    .product-card {
+      background: #fff;
       border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 1rem;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      position: relative;
+      transition: transform 0.2s;
     }
-    .product:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    .product-card:hover {
+      transform: translateY(-5px);
     }
-    .product img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 12px;
+    .product-card img {
+      max-width: 100%;
+      border-radius: 10px;
     }
-    .product h3 {
-      margin: 10px 0 5px;
-      font-size: 1.2rem;
-      color: #0d47a1;
-    }
-    .product p {
-      font-size: 0.95rem;
-      color: #555;
-    }
-    .price {
-      font-weight: bold;
-      color: #d32f2f;
-      margin-top: 5px;
-    }
-    .type {
-      font-style: italic;
-      color: #777;
-    }
-    .buy-btn {
-      display: inline-block;
-      margin-top: 10px;
-      background: #2e7d32;
-      color: white;
-      padding: 8px 15px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    .buy-btn:hover {
-      background: #1b5e20;
-    }
-    footer {
-      background: #eeeeee;
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
+    .product-card h3 {
+      margin: 0.5rem 0;
       color: #333;
-      margin-top: 40px;
+    }
+    .product-card p {
+      margin: 0.5rem 0;
+      color: #666;
+    }
+    .product-card a {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
     }
   </style>
-</head>
-<body>
-  <header>Twin Racing</header>
-  <nav>
-    <a href="#">Trang chủ</a>
-    <a href="#">Ốc Titan</a>
-    <a href="#">Ốc Salaya</a>
-    <a href="#">Phụ kiện Inox</a>
-    <a href="#">Liên hệ</a>
-  </nav>  <div class="product-grid" id="productGrid"></div>  <footer>
-    Liên hệ Zalo: 0334243506 - Twin Racing | &copy; 2025
-  </footer>  <script>
-    fetch("https://twinracing-5c171-default-rtdb.asia-southeast1.firebasedatabase.app/products.json")
-      .then(res => res.json())
-      .then(data => {
-        const grid = document.getElementById("productGrid");
-        Object.values(data).forEach(product => {
-          const item = document.createElement("div");
-          item.className = "product";
-          item.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <p class="type">${product.type}</p>
-            <p class="price">${parseInt(product.price).toLocaleString()}₫</p>
-            <p>${product.description}</p>
-            <a href="${product.buyLink}" target="_blank" class="buy-btn">Mua ngay</a>
-          `;
-          grid.appendChild(item);
-        });
-      });
-  </script></body>
-</html>
+</head><body>
+  <header>
+    <img src="logo.png" alt="Kaito Review Logo">
+    <h1>Kaito Review</h1>
+  </header>
+  <main>
+    <div class="product-list" id="productList"></div>
+  </main>  <script>
+    function createCard(product) {
+      return `
+        <div class="product-card">
+          <img src="${product.image}" alt="${product.name}">
+          <h3>${product.name}</h3>
+          <p>${product.description}</p>
+          <p><strong>${product.price}₫</strong></p>
+          <a href="${product.link}" target="_blank">Mua ngay</a>
+        </div>
+      `;
+    }
+
+    db.ref("products").on("value", snapshot => {
+      const data = snapshot.val();
+      const list = document.getElementById("productList");
+      list.innerHTML = "";
+      for (let id in data) {
+        list.innerHTML += createCard(data[id]);
+      }
+    });
+  </script></body></html>
