@@ -3,19 +3,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Twin Racing</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    form input, form textarea, form select { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; }
-    .product { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 8px; }
-    .actions button { margin-right: 5px; }
-  </style>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";const firebaseConfig = {
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";const firebaseConfig = {
   apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
   authDomain: "twinracing-5c171.firebaseapp.com",
   projectId: "twinracing-5c171",
-  storageBucket: "twinracing-5c171.firebasestorage.app",
+  storageBucket: "twinracing-5c171.appspot.com",
   messagingSenderId: "935865625166",
   appId: "1:935865625166:web:758b879ec96eecda18b11f",
   measurementId: "G-GBM4MPMB7P"
@@ -24,92 +18,68 @@
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function loadProducts() {
-  const container = document.getElementById("product-list");
-  container.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "products"));
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
+const sanPhamRef = collection(db, "sanpham");
+
+const form = document.getElementById("form-sanpham");
+const danhSach = document.getElementById("danhsach-sanpham");
+
+async function taiDanhSach() {
+  danhSach.innerHTML = "";
+  const querySnapshot = await getDocs(sanPhamRef);
+  querySnapshot.forEach((docItem) => {
+    const data = docItem.data();
     const div = document.createElement("div");
-    div.className = "product";
     div.innerHTML = `
-      <strong>${data.name}</strong> (${data.category})<br>
-      <img src="${data.image}" width="100"><br>
-      <em>${data.price} - ${data.desc}</em><br>
-      <a href="${data.link}" target="_blank">Link mua</a><br>
-      <div class="actions">
-        <button onclick="deleteProduct('${docSnap.id}')">Xoá</button>
-        <button onclick='editProduct("${docSnap.id}", ${JSON.stringify(data).replace(/'/g, "\'")})'>Sửa</button>
-      </div>
+      <hr>
+      <p><strong>${data.ten}</strong> - ${data.loai} - ${data.gia}đ</p>
+      <img src="${data.anh}" width="100"><br>
+      <p>${data.mota}</p>
+      <button onclick="xoaSanPham('${docItem.id}')">Xoá</button>
     `;
-    container.appendChild(div);
+    danhSach.appendChild(div);
   });
 }
 
-window.deleteProduct = async (id) => {
-  await deleteDoc(doc(db, "products", id));
-  alert("Đã xoá!");
-  loadProducts();
-}
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const ten = form.ten.value;
+  const loai = form.loai.value;
+  const anh = form.anh.value || "https://via.placeholder.com/150";
+  const gia = parseInt(form.gia.value);
+  const linkmua = form.linkmua.value;
+  const mota = form.mota.value;
 
-window.editProduct = (id, data) => {
-  document.getElementById("product-id").value = id;
-  document.getElementById("name").value = data.name;
-  document.getElementById("image").value = data.image;
-  document.getElementById("price").value = data.price;
-  document.getElementById("link").value = data.link;
-  document.getElementById("desc").value = data.desc;
-  document.getElementById("category").value = data.category || "";
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
-  const form = document.getElementById("product-form");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = form["product-id"].value;
-    const name = form.name.value;
-    const image = form.image.value;
-    const price = form.price.value;
-    const link = form.link.value;
-    const desc = form.desc.value;
-    const category = form.category.value;
-
-    if (id) {
-      await updateDoc(doc(db, "products", id), { name, image, price, link, desc, category });
-      alert("Đã cập nhật!");
-    } else {
-      await addDoc(collection(db, "products"), { name, image, price, link, desc, category, created: new Date() });
-      alert("Đã đăng sản phẩm!");
-    }
-
-    form.reset();
-    form["product-id"].value = "";
-    loadProducts();
-  });
+  await addDoc(sanPhamRef, { ten, loai, anh, gia, linkmua, mota });
+  form.reset();
+  taiDanhSach();
 });
+
+window.xoaSanPham = async (id) => {
+  await deleteDoc(doc(db, "sanpham", id));
+  taiDanhSach();
+}
+
+taiDanhSach();
 
   </script>
 </head>
 <body>
-  <h2>Đăng / Chỉnh sửa sản phẩm</h2>
-  <form id="product-form">
-    <input type="hidden" name="product-id" id="product-id">
-    <label>Tên sản phẩm: <input name="name" id="name" required></label>
+  <h1>Đăng / Chỉnh sửa sản phẩm</h1>
+  <form id="form-sanpham">
+    <label>Tên sản phẩm: <input name="ten" required></label><br>
     <label>Loại sản phẩm:
-      <select name="category" id="category" required>
-        <option value="">--Chọn loại--</option>
+      <select name="loai">
         <option value="Ốc titan">Ốc titan</option>
-        <option value="Ốc Salaya">Ốc Salaya</option>
         <option value="Phụ kiện inox">Phụ kiện inox</option>
       </select>
-    </label>
-    <label>Link ảnh: <input name="image" id="image" required></label>
-    <label>Giá: <input name="price" id="price" required></label>
-    <label>Link mua: <input name="link" id="link" required></label>
-    <label>Mô tả: <textarea name="desc" id="desc"></textarea></label>
+    </label><br>
+    <label>Link ảnh: <input name="anh" placeholder="URL ảnh..."></label><br>
+    <label>Giá: <input type="number" name="gia" required></label><br>
+    <label>Link mua: <input name="linkmua"></label><br>
+    <label>Mô tả: <textarea name="mota"></textarea></label><br>
     <button type="submit">Lưu</button>
-  </form>  <h3>Danh sách sản phẩm</h3>
-  <div id="product-list"></div>
+  </form>
+  <h2>Danh sách sản phẩm</h2>
+  <div id="danhsach-sanpham"></div>
 </body>
 </html>
