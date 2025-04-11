@@ -1,100 +1,93 @@
-<!DOCTYPE html><html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twin Racing</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .search-bar input, .search-bar select { margin: 5px; padding: 5px; }
-    .product { border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin: 10px 0; }
-    img { max-width: 150px; display: block; margin-bottom: 10px; }
-  </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";const firebaseConfig = {
-  apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
-  authDomain: "twinracing-5c171.firebaseapp.com",
-  projectId: "twinracing-5c171",
-  storageBucket: "twinracing-5c171.firebasestorage.app",
-  messagingSenderId: "935865625166",
-  appId: "1:935865625166:web:758b879ec96eecda18b11f",
-  measurementId: "G-GBM4MPMB7P"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-let products = [];
-
-async function loadProducts() {
-  const snapshot = await getDocs(collection(db, "products"));
-  products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  displayProducts(products);
-}
-
-function displayProducts(data) {
-  const container = document.getElementById("product-list");
-  container.innerHTML = "";
-  data.forEach(product => {
-    const div = document.createElement("div");
-    div.className = "product";
-    div.innerHTML = `
-      <strong>${product.name}</strong> (${product.category || "Không phân loại"})<br>
-      <img src="${product.image}" alt="${product.name}"><br>
-      <em>${product.price} - ${product.desc}</em><br>
-      <a href="${product.link}" target="_blank">Mua ngay</a>
-    `;
-    container.appendChild(div);
-  });
-}
-
-function filterProducts() {
-  const search = document.getElementById("search").value.toLowerCase();
-  const category = document.getElementById("filter-category").value;
-  const priceRange = document.getElementById("filter-price").value;
-
-  let filtered = products.filter(p => p.name.toLowerCase().includes(search));
-
-  if (category) {
-    filtered = filtered.filter(p => p.category === category);
-  }
-
-  if (priceRange) {
-    const [min, max] = priceRange.split("-").map(Number);
-    filtered = filtered.filter(p => {
-      const price = parseInt(p.price.replace(/[^0-9]/g, ""));
-      return price >= min && price <= max;
-    });
-  }
-
-  displayProducts(filtered);
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
-  document.getElementById("search").addEventListener("input", filterProducts);
-  document.getElementById("filter-category").addEventListener("change", filterProducts);
-  document.getElementById("filter-price").addEventListener("change", filterProducts);
-});
-
-  </script>
-</head>
-<body>
-  <h1>Sản phẩm - Twin Racing</h1>  <div class="search-bar">
-    <input type="text" id="search" placeholder="Tìm kiếm tên sản phẩm...">
-    <select id="filter-category">
-      <option value="">-- Tất cả loại --</option>
+<!DOCTYPE html><html lang="vi"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sản phẩm - Twin Racing</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
+</head><body class="bg-white text-gray-800">
+  <!-- Header -->
+  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Twin Racing</h1>
+    <div class="md:hidden">
+      <button id="menu-toggle" class="focus:outline-none">☰</button>
+    </div>
+    <nav id="menu" class="hidden md:flex space-x-4">
+      <a href="#" onclick="filterCategory('Tất cả')">Tất cả</a>
+      <a href="#" onclick="filterCategory('Ốc titan')">Ốc titan</a>
+      <a href="#" onclick="filterCategory('Ốc salaya')">Ốc salaya</a>
+      <a href="#" onclick="filterCategory('Phụ kiện inox')">Phụ kiện inox</a>
+    </nav>
+  </header>  <!-- Search & Filter -->  <section class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <input id="searchInput" type="text" placeholder="Tìm kiếm tên sản phẩm..." class="border p-2 rounded">
+    <select id="categoryFilter" class="border p-2 rounded">
+      <option value="">Tất cả loại</option>
       <option value="Ốc titan">Ốc titan</option>
-      <option value="Ốc Salaya">Ốc Salaya</option>
+      <option value="Ốc salaya">Ốc salaya</option>
       <option value="Phụ kiện inox">Phụ kiện inox</option>
     </select>
-    <select id="filter-price">
-      <option value="">-- Tất cả giá --</option>
-      <option value="0-50000">Dưới 50k</option>
-      <option value="50000-100000">50k - 100k</option>
-      <option value="100000-200000">100k - 200k</option>
-      <option value="200000-1000000">Trên 200k</option>
+    <select id="priceFilter" class="border p-2 rounded">
+      <option value="">Tất cả giá</option>
+      <option value="50000">Dưới 50k</option>
+      <option value="100000">Dưới 100k</option>
     </select>
-  </div>  <div id="product-list"></div>
-</body>
-</html>
+  </section>  <!-- Product list -->  <section id="product-list" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></section>  <!-- Firebase config -->  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
+      authDomain: "twinracing-5c171.firebaseapp.com",
+      projectId: "twinracing-5c171",
+      storageBucket: "twinracing-5c171.appspot.com",
+      messagingSenderId: "935865625166",
+      appId: "1:935865625166:web:758b879ec96eecda18b11f",
+      measurementId: "G-GBM4MPMB7P"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const productList = document.getElementById("product-list");
+
+    let allProducts = [];
+
+    db.collection("products").onSnapshot(snapshot => {
+      allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderProducts(allProducts);
+    });
+
+    function renderProducts(products) {
+      productList.innerHTML = products.map(p => `
+        <div class="border rounded p-4 shadow">
+          <img src="${p.image}" alt="${p.title}" class="w-full h-40 object-cover mb-2">
+          <h2 class="font-bold text-lg">${p.title}</h2>
+          <p class="text-sm text-gray-600 mb-1">${p.category}</p>
+          <p class="text-red-600 font-semibold mb-2">${p.price.toLocaleString()}đ</p>
+          <button class="bg-blue-600 text-white px-4 py-2 rounded">Mua ngay</button>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+    document.getElementById("priceFilter").addEventListener("change", applyFilters);
+
+    function applyFilters() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const category = document.getElementById("categoryFilter").value;
+      const priceLimit = parseInt(document.getElementById("priceFilter").value);
+
+      const filtered = allProducts.filter(p => {
+        return (
+          (!category || p.category === category) &&
+          (!priceLimit || p.price <= priceLimit) &&
+          (!keyword || p.title.toLowerCase().includes(keyword))
+        );
+      });
+
+      renderProducts(filtered);
+    }
+
+    // Toggle menu on mobile
+    document.getElementById("menu-toggle").addEventListener("click", () => {
+      const menu = document.getElementById("menu");
+      menu.classList.toggle("hidden");
+    });
+  </script></body></html>
