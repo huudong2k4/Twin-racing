@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trang Admin - Twin Racing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    form {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .preview {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Trang Admin - Đăng bài</h1>
+  <form id="postForm">
+    <input type="text" id="title" placeholder="Tên sản phẩm" required />
+    <input type="text" id="image" placeholder="Link ảnh sản phẩm" required />
+    <textarea id="description" rows="5" placeholder="Mô tả sản phẩm" required></textarea>
+    <input type="text" id="link" placeholder="Link mua hàng (Zalo/Facebook...)" required />
+    <button type="submit">Tạo bài viết</button>
+  </form>
+
+  <div class="preview" id="preview"></div>
+
+  <script>
+    document.getElementById('postForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const image = document.getElementById('image').value;
+      const description = document.getElementById('description').value;
+      const link = document.getElementById('link').value;
+
+      const html = `
+        <div class="container">
+          <img src="${image}" alt="${title}" class="product-img" />
+          <h2 class="product-title">${title}</h2>
+          <p class="product-description">${description}</p>
+          <a class="buy-button" href="${link}" target="_blank">Mua ngay</a>
+        </div>
+      `;
+
+      document.getElementById('preview').innerHTML = "<h3>Bản xem trước:</h3>" + html;
+      navigator.clipboard.writeText(html).then(() => {
+        alert("Đã sao chép mã HTML, dán vào file index.html hoặc sản phẩm.html");
+      });
+    });
+  </script>
+</body>
+</html>
