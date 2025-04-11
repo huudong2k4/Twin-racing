@@ -1,18 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Quản lý sản phẩm - Twin Racing</title>
-  <style>
-    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
-    input, select, textarea { width: 100%; padding: 8px; margin: 6px 0; }
-    button { padding: 8px 12px; margin-top: 10px; }
-    .product-item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Đăng sản phẩm - Admin</title>
   <script type="module">
-    // Firebase setup
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC0nt3jsF2TtovgNkx8x0p9iUyyWaDYf8Q",
@@ -28,75 +21,38 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Thêm sản phẩm
-    window.themSanPham = () => {
-      const ten = document.getElementById("ten").value;
-      const loai = document.getElementById("loai").value;
-      const anh = document.getElementById("anh").value || "https://via.placeholder.com/150";
-      const gia = parseInt(document.getElementById("gia").value || 0);
-      const link = document.getElementById("link").value;
-      const moTa = document.getElementById("moTa").value;
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-      const data = { ten, loai, anh, gia, link, moTa };
-      push(ref(db, "sanpham"), data);
-      document.getElementById("form").reset();
-    };
+      const data = {
+        ten: form.ten.value,
+        gia: parseInt(form.gia.value),
+        anh: form.anh.value,
+        moTa: form.moTa.value,
+        link: form.link.value,
+        loai: form.loai.value
+      };
 
-    // Hiển thị sản phẩm
-    const danhSach = document.getElementById("danhsach");
-    onValue(ref(db, "sanpham"), (snapshot) => {
-      danhSach.innerHTML = "";
-      snapshot.forEach(child => {
-        const sp = child.val();
-        const key = child.key;
-        danhSach.innerHTML += `
-          <div class="product-item">
-            <img src="${sp.anh}" width="100" /><br>
-            <strong>${sp.ten}</strong><br>
-            Giá: ${sp.gia.toLocaleString()}<br>
-            <a href="${sp.link}" target="_blank">Mua</a><br>
-            <em>${sp.moTa}</em><br>
-            <button onclick="xoaSanPham('${key}')">Xoá</button>
-          </div>
-        `;
-      });
+      await push(ref(db, "sanpham"), data);
+      alert("Đã đăng sản phẩm!");
+      form.reset();
     });
-
-    // Xoá sản phẩm
-    window.xoaSanPham = (key) => {
-      remove(ref(db, "sanpham/" + key));
-    };
   </script>
 </head>
 <body>
-  <h2>Đăng / Chỉnh sửa sản phẩm</h2>
-  <form id="form" onsubmit="themSanPham(); return false;">
-    <label>Tên sản phẩm:</label>
-    <input id="ten" required />
-
-    <label>Loại sản phẩm:</label>
-    <select id="loai">
+  <h2>Đăng sản phẩm mới</h2>
+  <form id="form">
+    <input name="ten" placeholder="Tên sản phẩm" required><br><br>
+    <input name="gia" type="number" placeholder="Giá (vd: 35000)" required><br><br>
+    <input name="anh" placeholder="Link ảnh" required><br><br>
+    <textarea name="moTa" placeholder="Mô tả" required></textarea><br><br>
+    <input name="link" placeholder="Link mua (Zalo...)" required><br><br>
+    <select name="loai">
       <option>Ốc titan</option>
       <option>Phụ kiện inox</option>
       <option>Khác</option>
-    </select>
-
-    <label>Link ảnh:</label>
-    <input id="anh" placeholder="https://..." />
-
-    <label>Giá:</label>
-    <input id="gia" type="number" required />
-
-    <label>Link mua:</label>
-    <input id="link" placeholder="https://..." />
-
-    <label>Mô tả:</label>
-    <textarea id="moTa"></textarea>
-
-    <button type="submit">Lưu</button>
+    </select><br><br>
+    <button type="submit">Đăng sản phẩm</button>
   </form>
-
-  <h3>Danh sách sản phẩm</h3>
-  <div id="danhsach"></div>
 </body>
 </html>
