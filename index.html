@@ -8,45 +8,46 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
     header { background-color: #111; color: #fff; padding: 10px; text-align: center; }
-    header img { height: 40px; }
-    .product-card { height: 100%; }
-    .product-img { height: 200px; object-fit: cover; }
+    header h1 { margin-top: 10px; font-size: 1.6rem; }
+    .product-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .product-img {
+      height: 160px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
     .btn-tiktok {
       background-color: #000;
       color: #fff;
       border-radius: 8px;
       margin-top: 10px;
     }
-    .category-badge {
-      display: inline-block;
-      background-color: #0d6efd;
-      color: #fff;
-      padding: 2px 8px;
-      border-radius: 5px;
-      font-size: 12px;
+    .card-body {
+      padding: 10px;
+    }
+    .card-title {
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+    .card-text {
+      font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Kaito Racing" />
-    <h1 class="mt-2">Kaito Racing</h1>
+    <h1>Kaito Racing</h1>
     <a href="https://tiktok.com/@huudong0003" target="_blank" class="btn btn-tiktok">TikTok: @huudong0003</a>
   </header>
 
-  <div class="container mt-4">
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <select id="filter" class="form-select">
-          <option value="all">Tất cả</option>
-          <option value="Ốc Titan">Ốc Titan</option>
-          <option value="Ốc Salaya">Ốc Salaya</option>
-          <option value="Phụ kiện Inox">Phụ kiện Inox</option>
-        </select>
-      </div>
-      <div class="col-md-8">
-        <input type="text" id="search" class="form-control" placeholder="Tìm kiếm sản phẩm...">
-      </div>
+  <div class="container mt-3">
+    <div class="mb-3">
+      <input type="text" id="search" class="form-control" placeholder="Tìm kiếm sản phẩm...">
     </div>
     <div class="row" id="productList"></div>
   </div>
@@ -68,20 +69,18 @@
 
     const productList = document.getElementById("productList");
     const searchInput = document.getElementById("search");
-    const filterSelect = document.getElementById("filter");
 
     function renderProduct(key, product) {
       const col = document.createElement("div");
-      col.className = "col-md-6 col-lg-4 mb-4";
+      col.className = "col-6 col-md-4 col-lg-3 mb-3";
       col.innerHTML = `
         <div class="card product-card shadow-sm">
           <img src="${product.image}" class="card-img-top product-img" alt="${product.name}">
           <div class="card-body">
             <h5 class="card-title">${product.name}</h5>
             <p class="card-text">${product.description}</p>
-            <p><span class="category-badge">${product.category}</span></p>
             <p><strong>${Number(product.price).toLocaleString()}đ</strong></p>
-            <a href="${product.link}" class="btn btn-success" target="_blank">Xem trên TikTok</a>
+            <a href="${product.link}" class="btn btn-success btn-sm" target="_blank">Xem trên TikTok</a>
           </div>
         </div>
       `;
@@ -92,18 +91,15 @@
       db.ref("sanpham").on("value", (snapshot) => {
         productList.innerHTML = "";
         const search = searchInput.value.toLowerCase();
-        const category = filterSelect.value;
         snapshot.forEach(child => {
           const product = child.val();
           const nameMatch = product.name.toLowerCase().includes(search);
-          const categoryMatch = category === "all" || product.category === category;
-          if (nameMatch && categoryMatch) renderProduct(child.key, product);
+          if (nameMatch) renderProduct(child.key, product);
         });
       });
     }
 
     searchInput.addEventListener("input", loadProducts);
-    filterSelect.addEventListener("change", loadProducts);
     window.addEventListener("load", loadProducts);
   </script>
 </body>
